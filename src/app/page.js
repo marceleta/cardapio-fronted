@@ -1,95 +1,83 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+'use client';
 
-export default function Home() {
+import { useRef, useState, useEffect, useCallback } from 'react'; // Added imports
+import Header from '../components/menu/Header';
+import HighlightsSection from '../components/menu/HighlightsSection';
+import CategorySection from '../components/menu/CategorySection';
+import StickyHeader from '../components/layout/StickyHeader'; // Added import
+import { getRestaurantData, getMenuData } from '../lib/api';
+import { Box } from '@mui/material'; // Added import
+import MobileBottomBar from '../components/layout/MobileBottomBar'; // Added import
+import { CartProvider } from '../context/CartContext'; // Added import
+import CartDrawer from '../components/cart/CartDrawer'; // Added import
+
+export default function HomePage() { // Changed to client component
+  const [restaurant, setRestaurant] = useState(null);
+  const [menuData, setMenuData] = useState(null);
+  const [highlights, setHighlights] = useState([]);
+  const [categories, setCategories] = useState([]);
+
+  const [showStickyHeader, setShowStickyHeader] = useState(false);
+  const [cartOpen, setCartOpen] = useState(false); // Added state for cart drawer
+
+  // Use a regular ref to store the DOM node
+  const headerRef = useRef(null);
+
+  // Callback ref to get the DOM node and set up the scroll listener
+  const setHeaderRef = useCallback(node => {
+    console.log('headerHeight')
+    if (node) {
+      headerRef.current = node; // Store the node in the regular ref
+
+      const headerHeight = node.offsetHeight;
+
+      const handleScroll = () => {
+        if (window.scrollY > headerHeight) {
+          setShowStickyHeader(true);
+        } else {
+          setShowStickyHeader(false);
+        }
+      };
+
+      window.addEventListener('scroll', handleScroll);
+      // Return a cleanup function to remove the event listener
+      return () => {
+        window.removeEventListener('scroll', handleScroll);
+      };
+    }
+  }, []); // Empty dependency array for useCallback
+
+  useEffect(() => {
+    async function fetchData() {
+      const fetchedRestaurant = await getRestaurantData();
+      const fetchedMenuData = await getMenuData();
+      setRestaurant(fetchedRestaurant);
+      setMenuData(fetchedMenuData);
+      setHighlights(fetchedMenuData.flatMap(category => category.items));
+      setCategories(fetchedMenuData.map(category => category.category));
+    }
+    fetchData();
+  }, []);
+
+  if (!restaurant || !menuData) {
+    return <Box>Loading...</Box>; // Or a proper loading spinner
+  }
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>src/app/page.js</code>.
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+    <CartProvider> {/* Wrapped with CartProvider */}
+      <Box component="main" sx={{ maxWidth: 'var(--max-width)', margin: 'auto', paddingBottom: '50px' }}>
+        <StickyHeader restaurant={restaurant} categories={categories} show={showStickyHeader} />
+        <Header ref={setHeaderRef} restaurant={restaurant} menuData={menuData} />
+        <HighlightsSection title="Promoções do Dia" items={highlights} />
+        <Box sx={{ padding: '0 1rem' }}>
+          {menuData.map((category, index) => (
+            <CategorySection key={index} category={category} />
+          ))}
+        </Box>
+        <MobileBottomBar setCartOpen={setCartOpen} /> {/* Render MobileBottomBar */}
+        <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} /> {/* Render CartDrawer */}
+      </Box>
+    </CartProvider>
   );
 }
+
