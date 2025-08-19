@@ -32,6 +32,10 @@ export default function StickyHeader({ restaurant, categories, show }) {
     setIsOrdersDialogOpen(false);
   };
 
+  const handleScrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
     <AppBar
       position="fixed"
@@ -79,6 +83,7 @@ export default function StickyHeader({ restaurant, categories, show }) {
             variant="contained"
             color="primary"
             startIcon={<Home />}
+            onClick={handleScrollToTop}
             sx={{
               minWidth: 'auto',
               padding: '6px 12px',

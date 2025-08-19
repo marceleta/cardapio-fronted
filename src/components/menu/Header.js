@@ -21,6 +21,7 @@ const Header = forwardRef(function Header({ restaurant, menuData }, ref) {
         width: '100%',
         textAlign: 'center',
         marginBottom: '2rem',
+        paddingTop: '64px', // Added padding to account for fixed header
       }}
     >
       <Box

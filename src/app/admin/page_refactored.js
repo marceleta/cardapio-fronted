@@ -118,9 +118,6 @@ export default function AdminPage() {
         return (
           <ProductsSection
             products={products}
-            setProducts={setProducts}
-            categories={categories}
-            setCategories={setCategories}
             searchTerm={searchTerm}
             setSearchTerm={setSearchTerm}
             onAddProduct={productHandlers.handleAddProduct}

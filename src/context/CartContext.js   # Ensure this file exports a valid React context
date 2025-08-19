@@ -1,0 +1,12 @@
+const React = require('react');
+
+const CartContext = React.createContext();
+
+const providerProps = {
+  // Add default values for the context here if necessary
+};
+
+module.exports = {
+  CartContext,
+  providerProps,
+};

@@ -34,6 +34,10 @@ export default function MobileBottomBar({ setCartOpen }) { // Added setCartOpen 
     setIsOrdersDialogOpen(false);
   };
 
+  const handleScrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   if (!isMobile) {
     return null; // Hide on larger screens
   }
@@ -41,7 +45,7 @@ export default function MobileBottomBar({ setCartOpen }) { // Added setCartOpen 
   return (
     <AppBar position="fixed" color="primary" sx={{ top: 'auto', bottom: 0, display: { xs: 'block', sm: 'none' } }}>
       <Toolbar sx={{ justifyContent: 'space-around' }}>
-        <Button color="inherit" sx={{ flexDirection: 'column', minWidth: 'auto' }}>
+        <Button color="inherit" sx={{ flexDirection: 'column', minWidth: 'auto' }} onClick={handleScrollToTop}>
           <Home sx={{ fontSize: '1.5rem' }} />
           <Typography variant="caption">Início</Typography>
         </Button>

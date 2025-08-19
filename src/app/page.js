@@ -10,6 +10,7 @@ import { Box } from '@mui/material'; // Added import
 import MobileBottomBar from '../components/layout/MobileBottomBar'; // Added import
 import { CartProvider } from '../context/CartContext'; // Added import
 import CartDrawer from '../components/cart/CartDrawer'; // Added import
+import SideCart from '../components/cart/SideCart'; // Added import
 
 export default function HomePage() { // Changed to client component
   const [restaurant, setRestaurant] = useState(null);
@@ -17,7 +18,7 @@ export default function HomePage() { // Changed to client component
   const [highlights, setHighlights] = useState([]);
   const [categories, setCategories] = useState([]);
 
-  const [showStickyHeader, setShowStickyHeader] = useState(false);
+  const [showStickyHeader, setShowStickyHeader] = useState(true); // Changed to true to show at top
   const [cartOpen, setCartOpen] = useState(false); // Added state for cart drawer
 
   // Use a regular ref to store the DOM node
@@ -32,7 +33,7 @@ export default function HomePage() { // Changed to client component
       const headerHeight = node.offsetHeight;
 
       const handleScroll = () => {
-        if (window.scrollY > headerHeight) {
+        if (window.scrollY === 0 || window.scrollY > headerHeight) {
           setShowStickyHeader(true);
         } else {
           setShowStickyHeader(false);
@@ -76,6 +77,7 @@ export default function HomePage() { // Changed to client component
         </Box>
         <MobileBottomBar setCartOpen={setCartOpen} /> {/* Render MobileBottomBar */}
         <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} /> {/* Render CartDrawer */}
+        <SideCart /> {/* Render SideCart for desktop */}
       </Box>
     </CartProvider>
   );

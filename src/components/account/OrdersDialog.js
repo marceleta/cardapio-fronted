@@ -70,32 +70,34 @@ export default function OrdersDialog({ open, onClose }) {
                         {order.date.toLocaleString()}
                       </Typography>
                     </Box>
-                    <ListItemText
-                      primary={`Pedido #${order.id}`}
-                      secondary={
-                        <React.Fragment>
-                          <Typography
-                            sx={{ display: 'inline' }}
-                            component="span"
-                            variant="body2"
-                            color="text.primary"
-                          >
-                            Itens:
-                          </Typography>
-                          {order.items.map((item, index) => (
-                            <span key={index}>
-                              {item.quantity}x {item.name} (R$ {item.price})
-                              {item.observations && ` - Obs: ${item.observations}`}
-                              {item.addOns && item.addOns.length > 0 && ` - Adicionais: ${item.addOns.map(ao => ao.name).join(', ')}`}
-                              {index < order.items.length - 1 ? '; ' : ''}
-                            </span>
-                          ))}
-                          <Typography variant="body1" fontWeight="bold" sx={{ mt: 1 }}>
-                            Total: R$ {order.totalPrice.toFixed(2).replace('.', ',')}
-                          </Typography>
-                        </React.Fragment>
-                      }
-                    />
+                    <Typography variant="subtitle1" sx={{ mb: 1 }}>
+                      Pedido #{order.id}
+                    </Typography>
+                    <Box>
+                      <Typography
+                        variant="body2"
+                        color="text.primary"
+                        sx={{ display: 'inline' }}
+                      >
+                        Itens: 
+                      </Typography>
+                      {order.items.map((item, index) => (
+                        <Typography
+                          key={index}
+                          variant="body2"
+                          color="text.secondary"
+                          component="span"
+                        >
+                          {item.quantity}x {item.name} (R$ {item.price})
+                          {item.observations && ` - Obs: ${item.observations}`}
+                          {item.addOns && item.addOns.length > 0 && ` - Adicionais: ${item.addOns.map(ao => ao.name).join(', ')}`}
+                          {index < order.items.length - 1 ? '; ' : ''}
+                        </Typography>
+                      ))}
+                      <Typography variant="body1" fontWeight="bold" sx={{ mt: 1, display: 'block' }}>
+                        Total: R$ {order.totalPrice.toFixed(2).replace('.', ',')}
+                      </Typography>
+                    </Box>
                   </Box>
                 </ListItem>
                 <Divider component="li" />
