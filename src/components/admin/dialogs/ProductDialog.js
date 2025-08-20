@@ -13,14 +13,16 @@ import {
   Select,
   MenuItem,
   Box,
-  Typography
+  Typography,
+  FormControlLabel,
+  Switch
 } from '@mui/material';
 
 const ProductDialog = ({ 
   open, 
   onClose, 
   product, 
-  categories, 
+  categories = [], 
   onSave 
 }) => {
   const [formData, setFormData] = useState({
@@ -28,28 +30,35 @@ const ProductDialog = ({
     description: '',
     price: '',
     category: '',
-    imageUrl: ''
+    imageUrl: '',
+    visibleInMenu: true // Novo campo para controlar visibilidade no cardápio
   });
 
+  // Effect para inicializar formulário quando open ou produto mudarem
   useEffect(() => {
-    if (product) {
-      setFormData({
-        name: product.name || '',
-        description: product.description || '',
-        price: product.price || '',
-        category: product.category || '',
-        imageUrl: product.imageUrl || ''
-      });
-    } else {
-      setFormData({
-        name: '',
-        description: '',
-        price: '',
-        category: categories[0] || '',
-        imageUrl: ''
-      });
+    if (open) {
+      if (product) {
+        setFormData({
+          name: product.name || '',
+          description: product.description || '',
+          price: product.price || '',
+          category: product.category || '',
+          imageUrl: product.imageUrl || '',
+          visibleInMenu: product.visibleInMenu !== undefined ? product.visibleInMenu : true
+        });
+      } else {
+        // Para novo produto, deixar campos vazios
+        setFormData({
+          name: '',
+          description: '',
+          price: '',
+          category: '',
+          imageUrl: '',
+          visibleInMenu: true
+        });
+      }
     }
-  }, [product, categories, open]);
+  }, [open, product]); // Remover categories para evitar loop infinito
 
   const handleSubmit = () => {
     const productData = {
@@ -64,14 +73,22 @@ const ProductDialog = ({
     onSave(productData);
   };
 
-  const isValid = formData.name && formData.price && formData.category;
+  const isValid = formData.name && formData.price !== '' && formData.category;
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>
-        <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-          {product ? '✏️ Editar Produto' : '🍽️ Adicionar Produto'}
-        </Typography>
+    <Dialog 
+      open={open} 
+      onClose={onClose} 
+      maxWidth="sm" 
+      fullWidth
+      onKeyDown={(e) => {
+        if (e.key === 'Escape') {
+          onClose();
+        }
+      }}
+    >
+      <DialogTitle sx={{ fontWeight: 'bold' }}>
+        {product ? '✏️ Editar Produto' : '🍽️ Adicionar Produto'}
       </DialogTitle>
       
       <DialogContent>
@@ -109,8 +126,9 @@ const ProductDialog = ({
               value={formData.category}
               onChange={(e) => setFormData({ ...formData, category: e.target.value })}
               label="Categoria"
+              required
             >
-              {categories.map((category) => (
+              {Array.isArray(categories) && categories.map((category) => (
                 <MenuItem key={category} value={category}>
                   {category}
                 </MenuItem>
@@ -125,6 +143,27 @@ const ProductDialog = ({
             fullWidth
             placeholder="https://exemplo.com/imagem.jpg"
           />
+
+          {/* Switch para controlar visibilidade no cardápio */}
+          <Box sx={{ mt: 1 }}>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={formData.visibleInMenu}
+                  onChange={(e) => setFormData({ ...formData, visibleInMenu: e.target.checked })}
+                  color="primary"
+                />
+              }
+              label="Exibir no cardápio para clientes"
+              sx={{ display: 'block' }}
+            />
+            <Typography variant="body2" color="text.secondary" sx={{ ml: 4 }}>
+              {formData.visibleInMenu 
+                ? "O produto será visível no cardápio público" 
+                : "O produto ficará oculto para os clientes"
+              }
+            </Typography>
+          </Box>
         </Box>
       </DialogContent>
       

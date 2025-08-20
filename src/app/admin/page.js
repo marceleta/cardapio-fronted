@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useState } from 'react';
-import { menuData } from '../../lib/mockData';
+import { menuData, mockClients } from '../../lib/mockData';
 
 // Importar componentes
 import AdminLayout from '../../components/admin/AdminLayout';
@@ -10,9 +10,12 @@ import {
   Dashboard, 
   OrdersSection, 
   ProductsSection, 
-  CategoriesSection, 
+  CategoriesSection,
+  BannerManager,
   SettingsSection 
 } from '../../components/admin/sections';
+import ClientsSection from '../../components/admin/sections/ClientsSection';
+import HighlightsManager from '../../components/admin/sections/HighlightsManager';
 import { ProductDialog } from '../../components/admin/dialogs';
 
 // Importar hooks personalizados
@@ -27,6 +30,10 @@ import { calculateDashboardStats } from '../../utils/adminHelpers';
 export default function AdminPage() {
   // Estado principal usando hook personalizado
   const adminState = useAdminState();
+  
+  // Estado específico para clientes
+  const [clients, setClients] = useState(mockClients);
+  const [clientSearchTerm, setClientSearchTerm] = useState('');
   
   // Extrair dados do estado
   const {
@@ -129,6 +136,16 @@ export default function AdminPage() {
           />
         );
       
+      case 'clients':
+        return (
+          <ClientsSection
+            clients={clients}
+            setClients={setClients}
+            searchTerm={clientSearchTerm}
+            setSearchTerm={setClientSearchTerm}
+          />
+        );
+      
       case 'categories':
         return (
           <CategoriesSection
@@ -139,6 +156,12 @@ export default function AdminPage() {
             onDeleteCategory={categoryHandlers.handleDeleteCategory}
           />
         );
+      
+      case 'banners':
+        return <BannerManager />;
+      
+      case 'highlights':
+        return <HighlightsManager />;
       
       case 'settings':
         return <SettingsSection />;

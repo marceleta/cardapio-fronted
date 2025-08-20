@@ -30,7 +30,16 @@ import {
   InputAdornment,
   Paper,
   Chip,
-  Divider
+  Divider,
+  ToggleButton,
+  ToggleButtonGroup,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Avatar
 } from '@mui/material';
 
 // Importações do Material-UI - Ícones
@@ -38,7 +47,11 @@ import {
   Add,
   Search,
   Edit,
-  Delete
+  Delete,
+  ViewModule,
+  ViewList,
+  Visibility,
+  VisibilityOff
 } from '@mui/icons-material';
 
 // Importações de utilitários e componentes locais
@@ -72,6 +85,9 @@ const ProductsSection = ({
   onEditProduct,
   onDeleteProduct
 }) => {
+  // Estado para controlar o modo de visualização (cards ou lista)
+  const [viewMode, setViewMode] = React.useState('list');
+
   // Filtragem de produtos baseada no termo de busca
   const filteredProducts = filterProducts(products, searchTerm);
 
@@ -82,6 +98,224 @@ const ProductsSection = ({
     products,
     setProducts
   });
+
+  // Função para alterar o modo de visualização
+  const handleViewModeChange = (event, newViewMode) => {
+    if (newViewMode !== null) {
+      setViewMode(newViewMode);
+    }
+  };
+
+  // Função para formatar preço em formato brasileiro
+  const formatPrice = (price) => {
+    return parseFloat(price).toFixed(2).replace('.', ',');
+  };
+
+  // Renderização dos produtos em formato de cards
+  const renderProductCards = () => (
+    <Grid container spacing={3}>
+      {filteredProducts.map((product) => (
+        <Grid size={{ xs: 12, sm: 6, md: 4 }} key={product.id}>
+          {/* CARD DE PRODUTO INDIVIDUAL */}
+          {/* Design elevado com efeitos hover e animações suaves */}
+          <Card sx={{ 
+            height: '100%', 
+            display: 'flex', 
+            flexDirection: 'column',
+            borderRadius: 2,
+            boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+            transition: 'transform 0.2s, box-shadow 0.2s',
+            opacity: product.visibleInMenu !== false ? 1 : 0.7,
+            border: product.visibleInMenu === false ? '2px dashed #ccc' : 'none',
+            '&:hover': { 
+              transform: 'translateY(-4px)',
+              boxShadow: '0 8px 30px rgba(0,0,0,0.15)'
+            }
+          }}>
+            {/* Imagem do produto com fallback */}
+            <CardMedia
+              component="img"
+              height="200"
+              image={product.imageUrl || '/placeholder-food.jpg'}
+              alt={product.name}
+              sx={{ objectFit: 'cover' }}
+            />
+            
+            {/* Conteúdo principal do card */}
+            <CardContent sx={{ flexGrow: 1 }}>
+              {/* Nome do produto com status de visibilidade */}
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+                <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold', flex: 1 }}>
+                  {product.name}
+                </Typography>
+                {/* Indicador de visibilidade no cardápio */}
+                <Chip
+                  icon={product.visibleInMenu !== false ? <Visibility /> : <VisibilityOff />}
+                  label={product.visibleInMenu !== false ? "Visível" : "Oculto"}
+                  size="small"
+                  color={product.visibleInMenu !== false ? "success" : "default"}
+                  variant="outlined"
+                />
+              </Box>
+              
+              {/* Descrição do produto */}
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                {product.description}
+              </Typography>
+              
+              {/* Container de informações: preço e categoria */}
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                {/* Preço formatado em destaque */}
+                <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#27ae60' }}>
+                  R$ {formatPrice(product.price)}
+                </Typography>
+                
+                {/* Badge da categoria */}
+                <Chip 
+                  label={product.category} 
+                  size="small" 
+                  color="primary" 
+                  variant="outlined"
+                />
+              </Box>
+            </CardContent>
+            
+            {/* AÇÕES DO CARD */}
+            {/* Botões de editar e excluir em layout horizontal */}
+            <CardActions sx={{ p: 2, gap: 1 }}>
+              {/* Botão de edição */}
+              <Button
+                fullWidth
+                variant="outlined"
+                startIcon={<Edit />}
+                onClick={() => onEditProduct(product)}
+                sx={{ 
+                  color: '#3498db',
+                  borderColor: '#3498db',
+                  '&:hover': {
+                    backgroundColor: '#3498db',
+                    color: 'white'
+                  }
+                }}
+              >
+                Editar
+              </Button>
+              
+              {/* Botão de exclusão */}
+              <Button
+                fullWidth
+                variant="outlined"
+                color="error"
+                startIcon={<Delete />}
+                onClick={() => onDeleteProduct(product.id)}
+              >
+                Excluir
+              </Button>
+            </CardActions>
+          </Card>
+        </Grid>
+      ))}
+    </Grid>
+  );
+
+  // Renderização dos produtos em formato de lista/tabela
+  const renderProductList = () => (
+    <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
+      <Table>
+        <TableHead>
+          <TableRow sx={{ backgroundColor: '#f8f9fa' }}>
+            <TableCell sx={{ fontWeight: 'bold' }}>Produto</TableCell>
+            <TableCell sx={{ fontWeight: 'bold' }}>Categoria</TableCell>
+            <TableCell sx={{ fontWeight: 'bold', textAlign: 'center' }}>Visibilidade</TableCell>
+            <TableCell sx={{ fontWeight: 'bold', textAlign: 'right' }}>Preço</TableCell>
+            <TableCell sx={{ fontWeight: 'bold', textAlign: 'center', width: 200 }}>Ações</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {filteredProducts.map((product) => (
+            <TableRow 
+              key={product.id}
+              sx={{ 
+                '&:hover': { backgroundColor: '#f8f9fa' },
+                transition: 'background-color 0.2s',
+                opacity: product.visibleInMenu !== false ? 1 : 0.7,
+                backgroundColor: product.visibleInMenu === false ? '#f9f9f9' : 'inherit'
+              }}
+            >
+              <TableCell>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <Avatar
+                    src={product.imageUrl || '/placeholder-food.jpg'}
+                    alt={product.name}
+                    sx={{ width: 50, height: 50 }}
+                  />
+                  <Box>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
+                      {product.name}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {product.description}
+                    </Typography>
+                  </Box>
+                </Box>
+              </TableCell>
+              <TableCell>
+                <Chip 
+                  label={product.category} 
+                  size="small" 
+                  color="primary" 
+                  variant="outlined"
+                />
+              </TableCell>
+              <TableCell sx={{ textAlign: 'center' }}>
+                <Chip
+                  icon={product.visibleInMenu !== false ? <Visibility /> : <VisibilityOff />}
+                  label={product.visibleInMenu !== false ? "Visível no cardápio" : "Oculto do cardápio"}
+                  size="small"
+                  color={product.visibleInMenu !== false ? "success" : "default"}
+                  variant="outlined"
+                />
+              </TableCell>
+              <TableCell sx={{ textAlign: 'right' }}>
+                <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#27ae60' }}>
+                  R$ {formatPrice(product.price)}
+                </Typography>
+              </TableCell>
+              <TableCell sx={{ textAlign: 'center' }}>
+                <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    startIcon={<Edit />}
+                    onClick={() => onEditProduct(product)}
+                    sx={{ 
+                      color: '#3498db',
+                      borderColor: '#3498db',
+                      '&:hover': {
+                        backgroundColor: '#3498db',
+                        color: 'white'
+                      }
+                    }}
+                  >
+                    Editar
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    color="error"
+                    startIcon={<Delete />}
+                    onClick={() => onDeleteProduct(product.id)}
+                  >
+                    Excluir
+                  </Button>
+                </Box>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </TableContainer>
+  );
 
   return (
     <Box>
@@ -104,9 +338,25 @@ const ProductsSection = ({
       {/* Seção de Produtos com busca e botão de adicionar */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#2c3e50' }}>
-          �️ Produtos ({filteredProducts.length})
+          🍽️ Produtos ({filteredProducts.length})
         </Typography>
         <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+          {/* Seletor de modo de visualização */}
+          <ToggleButtonGroup
+            value={viewMode}
+            exclusive
+            onChange={handleViewModeChange}
+            aria-label="modo de visualização"
+            size="small"
+          >
+            <ToggleButton value="cards" aria-label="visualização em cards">
+              <ViewModule />
+            </ToggleButton>
+            <ToggleButton value="list" aria-label="visualização em lista">
+              <ViewList />
+            </ToggleButton>
+          </ToggleButtonGroup>
+          
           <TextField
             placeholder="Buscar produtos..."
             variant="outlined"
@@ -138,99 +388,9 @@ const ProductsSection = ({
         </Box>
       </Box>
 
-      {/* GRID RESPONSIVO DE PRODUTOS */}
-      {/* Layout adaptativo: 1 coluna (mobile), 2 colunas (tablet), 3 colunas (desktop) */}
-      <Grid container spacing={3}>
-        {filteredProducts.map((product) => (
-          <Grid item xs={12} sm={6} md={4} key={product.id}>
-            {/* CARD DE PRODUTO INDIVIDUAL */}
-            {/* Design elevado com efeitos hover e animações suaves */}
-            <Card sx={{ 
-              height: '100%', 
-              display: 'flex', 
-              flexDirection: 'column',
-              borderRadius: 2,
-              boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-              transition: 'transform 0.2s, box-shadow 0.2s',
-              '&:hover': { 
-                transform: 'translateY(-4px)',
-                boxShadow: '0 8px 30px rgba(0,0,0,0.15)'
-              }
-            }}>
-              {/* Imagem do produto com fallback */}
-              <CardMedia
-                component="img"
-                height="200"
-                image={product.imageUrl || '/placeholder-food.jpg'}
-                alt={product.name}
-                sx={{ objectFit: 'cover' }}
-              />
-              
-              {/* Conteúdo principal do card */}
-              <CardContent sx={{ flexGrow: 1 }}>
-                {/* Nome do produto */}
-                <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold' }}>
-                  {product.name}
-                </Typography>
-                
-                {/* Descrição do produto */}
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                  {product.description}
-                </Typography>
-                
-                {/* Container de informações: preço e categoria */}
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  {/* Preço formatado em destaque */}
-                  <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#27ae60' }}>
-                    R$ {parseFloat(product.price).toFixed(2)}
-                  </Typography>
-                  
-                  {/* Badge da categoria */}
-                  <Chip 
-                    label={product.category} 
-                    size="small" 
-                    color="primary" 
-                    variant="outlined"
-                  />
-                </Box>
-              </CardContent>
-              
-              {/* AÇÕES DO CARD */}
-              {/* Botões de editar e excluir em layout horizontal */}
-              <CardActions sx={{ p: 2, gap: 1 }}>
-                {/* Botão de edição */}
-                <Button
-                  fullWidth
-                  variant="outlined"
-                  startIcon={<Edit />}
-                  onClick={() => onEditProduct(product)}
-                  sx={{ 
-                    color: '#3498db',
-                    borderColor: '#3498db',
-                    '&:hover': {
-                      backgroundColor: '#3498db',
-                      color: 'white'
-                    }
-                  }}
-                >
-                  Editar
-                </Button>
-                
-                {/* Botão de exclusão */}
-                <Button
-                  fullWidth
-                  variant="outlined"
-                  color="error"
-                  startIcon={<Delete />}
-                  onClick={() => onDeleteProduct(product.id)}
-                >
-                  Excluir
-                </Button>
-              </CardActions>
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
+      {/* RENDERIZAÇÃO CONDICIONAL DOS PRODUTOS */}
+      {/* Alterna entre visualização em cards e lista baseado no estado viewMode */}
+      {viewMode === 'cards' ? renderProductCards() : renderProductList()}
 
       {/* ESTADO VAZIO - NENHUM PRODUTO ENCONTRADO */}
       {/* Exibido quando não há produtos ou quando a busca não retorna resultados */}

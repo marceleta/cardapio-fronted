@@ -97,7 +97,7 @@ const config = {
   },
   
   // Mapeamento de módulos para facilitar imports
-  moduleNameMapping: {
+  moduleNameMapper: {
     // Aliases para imports mais limpos
     '^@/(.*)$': '<rootDir>/src/$1',
     '^@components/(.*)$': '<rootDir>/src/components/$1',
@@ -119,66 +119,7 @@ const config = {
   
   // Limpeza automática de mocks
   clearMocks: true,
-  restoreMocks: true,
-  
-  // Configuração para diferentes tipos de teste
-  projects: [
-    {
-      displayName: '🧪 Unit Tests',
-      testMatch: [
-        '<rootDir>/src/**/__tests__/**/*.test.{js,jsx}',
-        '<rootDir>/src/**/?(*.)(test).{js,jsx}'
-      ],
-      testEnvironment: 'jsdom'
-    },
-    {
-      displayName: '🔗 Integration Tests', 
-      testMatch: [
-        '<rootDir>/src/**/__tests__/**/*.integration.{js,jsx}',
-        '<rootDir>/src/**/?(*.)(integration).{js,jsx}'
-      ],
-      testEnvironment: 'jsdom',
-      testTimeout: 30000
-    },
-    {
-      displayName: '⚡ Component Tests',
-      testMatch: [
-        '<rootDir>/src/components/**/__tests__/**/*.{js,jsx}',
-        '<rootDir>/src/components/**/*.{test,spec}.{js,jsx}'
-      ],
-      testEnvironment: 'jsdom'
-    }
-  ],
-  
-  // Configuração de performance
-  maxWorkers: '50%',
-  cache: true,
-  
-  // Plugins para modo watch
-  watchPlugins: [
-    'jest-watch-typeahead/filename',
-    'jest-watch-typeahead/testname'
-  ],
-  
-  // Ignorar durante watch mode
-  watchPathIgnorePatterns: [
-    '<rootDir>/node_modules/',
-    '<rootDir>/coverage/',
-    '<rootDir>/.next/',
-    '<rootDir>/out/'
-  ],
-  
-  // Configurações avançadas para debugging
-  detectOpenHandles: true,
-  errorOnDeprecated: true,
-  
-  // Notificações (desabilitadas por padrão)
-  notify: false,
-  
-  // Configurações específicas para Next.js
-  transform: {
-    // Next.js já cuida das transformações
-  }
+  restoreMocks: true
 }
  
 // Exporta configuração integrada com Next.js

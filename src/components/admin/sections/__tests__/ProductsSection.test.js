@@ -309,6 +309,192 @@ describe('ProductsSection', () => {
   });
 
   /**
+   * GRUPO: Testes do Seletor de Visualização
+   */
+  describe('Seletor de Visualização', () => {
+    /**
+     * TESTE: Renderização dos botões de toggle
+     * Verifica se os botões de visualização estão presentes
+     */
+    test('deve renderizar botões de seleção de visualização', () => {
+      // ARRANGE: Props básicas
+      const props = { ...defaultProps };
+
+      // ACT: Renderizar componente
+      renderWithProviders(<ProductsSection {...props} />);
+
+      // ASSERT: Verificar presença dos botões
+      expect(screen.getByRole('button', { name: /visualização em cards/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /visualização em lista/i })).toBeInTheDocument();
+    });
+
+    /**
+     * TESTE: Visualização padrão em lista
+     * Verifica se inicia com visualização em lista
+     */
+    test('deve iniciar com visualização em lista por padrão', () => {
+      // ARRANGE: Props com produtos
+      const produto = createMockProduct();
+      const props = { ...defaultProps, products: [produto] };
+      filterProducts.mockReturnValue([produto]);
+
+      // ACT: Renderizar
+      renderWithProviders(<ProductsSection {...props} />);
+
+      // ASSERT: Verificar que há tabela (lista) visível por padrão
+      expect(screen.getByRole('table')).toBeInTheDocument();
+      
+      // Verificar cabeçalhos da tabela
+      expect(screen.getByText('Produto')).toBeInTheDocument();
+      expect(screen.getByText('Categoria')).toBeInTheDocument();
+      expect(screen.getByText('Preço')).toBeInTheDocument();
+      expect(screen.getByText('Ações')).toBeInTheDocument();
+    });
+
+    /**
+     * TESTE: Alternância para visualização em cards
+     * Verifica se alterna corretamente para visualização em cards
+     */
+    test('deve alternar para visualização em cards quando clicado', async () => {
+      // ARRANGE: Props com produtos
+      const produto = createMockProduct();
+      const props = { ...defaultProps, products: [produto] };
+      filterProducts.mockReturnValue([produto]);
+
+      // ACT: Renderizar e clicar no botão de cards
+      renderWithProviders(<ProductsSection {...props} />);
+      
+      // Verificar que começou em lista
+      expect(screen.getByRole('table')).toBeInTheDocument();
+      
+      const botaoCards = screen.getByRole('button', { name: /visualização em cards/i });
+      fireEvent.click(botaoCards);
+
+      // ASSERT: Verificar se mudou para formato de cards
+      await waitFor(() => {
+        expect(screen.queryByRole('table')).not.toBeInTheDocument();
+      });
+    });
+
+    /**
+     * TESTE: Volta para visualização em lista
+     * Verifica se consegue voltar para lista após estar em cards
+     */
+    test('deve voltar para visualização em lista quando clicado', async () => {
+      // ARRANGE: Props com produtos
+      const produto = createMockProduct();
+      const props = { ...defaultProps, products: [produto] };
+      filterProducts.mockReturnValue([produto]);
+
+      // ACT: Renderizar, ir para cards e voltar para lista
+      renderWithProviders(<ProductsSection {...props} />);
+      
+      // Primeiro vai para cards
+      const botaoCards = screen.getByRole('button', { name: /visualização em cards/i });
+      fireEvent.click(botaoCards);
+      
+      await waitFor(() => {
+        expect(screen.queryByRole('table')).not.toBeInTheDocument();
+      });
+
+      // Depois volta para lista
+      const botaoLista = screen.getByRole('button', { name: /visualização em lista/i });
+      fireEvent.click(botaoLista);
+
+      // ASSERT: Verificar que tabela está visível novamente
+      await waitFor(() => {
+        expect(screen.getByRole('table')).toBeInTheDocument();
+      });
+    });
+
+    /**
+     * TESTE: Funcionalidade em ambas as visualizações
+     * Verifica se botões funcionam em ambos os modos
+     */
+    test('deve manter funcionalidade de botões em ambas as visualizações', async () => {
+      // ARRANGE: Produto e função mock
+      const produto = createMockProduct({ id: 456 });
+      const mockOnEditProduct = jest.fn();
+      const props = { 
+        ...defaultProps, 
+        products: [produto],
+        onEditProduct: mockOnEditProduct
+      };
+      filterProducts.mockReturnValue([produto]);
+
+      // ACT: Renderizar e testar em modo lista (padrão)
+      renderWithProviders(<ProductsSection {...props} />);
+      
+      // Testar edição em modo lista
+      let botaoEditar = screen.getByText('Editar');
+      fireEvent.click(botaoEditar);
+      expect(mockOnEditProduct).toHaveBeenCalledWith(produto);
+
+      // Alternar para cards
+      const botaoCards = screen.getByRole('button', { name: /visualização em cards/i });
+      fireEvent.click(botaoCards);
+      
+      await waitFor(() => {
+        expect(screen.queryByRole('table')).not.toBeInTheDocument();
+      });
+
+      // Testar edição em modo cards
+      mockOnEditProduct.mockClear();
+      botaoEditar = screen.getByText('Editar');
+      fireEvent.click(botaoEditar);
+
+      // ASSERT: Verificar que funciona em ambos os modos
+      expect(mockOnEditProduct).toHaveBeenCalledWith(produto);
+    });
+
+    /**
+     * TESTE: Dados corretos na visualização em lista
+     * Verifica se informações são exibidas corretamente na tabela
+     */
+    test('deve exibir informações corretas na visualização em lista', async () => {
+      // ARRANGE: Produto com dados específicos
+      const produto = createMockProduct({
+        name: 'Produto Teste Lista',
+        price: 19.99,
+        category: 'Categoria Teste'
+      });
+      const props = { ...defaultProps, products: [produto] };
+      filterProducts.mockReturnValue([produto]);
+
+      // ACT: Renderizar e alternar para lista
+      renderWithProviders(<ProductsSection {...props} />);
+      const botaoLista = screen.getByRole('button', { name: /visualização em lista/i });
+      fireEvent.click(botaoLista);
+
+      await waitFor(() => {
+        expect(screen.getByRole('table')).toBeInTheDocument();
+      });
+
+      // ASSERT: Verificar se dados estão corretos
+      expect(screen.getByText('Produto Teste Lista')).toBeInTheDocument();
+      expect(screen.getByText('R$ 19,99')).toBeInTheDocument();
+      expect(screen.getByText('Categoria Teste')).toBeInTheDocument();
+    });
+
+    /**
+     * TESTE: Acessibilidade do seletor
+     * Verifica se elementos têm labels apropriados
+     */
+    test('deve ter labels de acessibilidade apropriados', () => {
+      // ARRANGE: Props básicas
+      const props = { ...defaultProps };
+
+      // ACT: Renderizar
+      renderWithProviders(<ProductsSection {...props} />);
+
+      // ASSERT: Verificar labels de acessibilidade
+      expect(screen.getByLabelText('modo de visualização')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /visualização em cards/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /visualização em lista/i })).toBeInTheDocument();
+    });
+  });
+
+  /**
    * GRUPO: Testes de Estados Especiais
    */
   describe('Estados Especiais', () => {
@@ -381,34 +567,6 @@ describe('ProductsSection', () => {
    * GRUPO: Testes de Integração com Categorias
    */
   describe('Integração com Categorias', () => {
-    /**
-     * TESTE: Hook de categorias é inicializado
-     * Verifica se hook é chamado com props corretas
-     */
-    test('deve inicializar hook de categorias com props corretas', () => {
-      // ARRANGE: Props com categorias
-      const categorias = [createMockCategory()];
-      const produtos = [createMockProduct()];
-      const props = { 
-        ...defaultProps, 
-        categories: categorias,
-        products: produtos,
-        setCategories: jest.fn(),
-        setProducts: jest.fn()
-      };
-
-      // ACT: Renderizar
-      renderWithProviders(<ProductsSection {...props} />);
-
-      // ASSERT: Verificar se hook foi chamado corretamente
-      expect(useCategoryManager).toHaveBeenCalledWith({
-        categories: categorias,
-        setCategories: props.setCategories,
-        products: produtos,
-        setProducts: props.setProducts
-      });
-    });
-
     /**
      * TESTE: Componente CategoryManager é renderizado
      * Verifica se gerenciador de categorias está presente

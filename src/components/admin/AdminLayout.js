@@ -27,7 +27,9 @@ import {
   Settings,
   FilterList,
   Person,
-  Logout
+  Logout,
+  Campaign as CampaignIcon,
+  Star as StarIcon
 } from '@mui/icons-material';
 import { drawerWidth } from '../../utils/adminHelpers';
 
@@ -43,7 +45,10 @@ const AdminLayout = ({
     { id: 'dashboard', label: 'Painel', icon: <Dashboard />, badge: null },
     { id: 'orders', label: 'Pedidos', icon: <ShoppingCart />, badge: pendingOrders > 0 ? pendingOrders : null },
     { id: 'products', label: 'Produtos', icon: <Restaurant />, badge: null },
+    { id: 'clients', label: 'Clientes', icon: <Person />, badge: null },
     { id: 'categories', label: 'Categorias', icon: <FilterList />, badge: null },
+    { id: 'banners', label: 'Banners', icon: <CampaignIcon />, badge: null },
+    { id: 'highlights', label: 'Destaques', icon: <StarIcon />, badge: null },
     { id: 'settings', label: 'Configurações', icon: <Settings />, badge: null }
   ];
 

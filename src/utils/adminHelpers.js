@@ -85,10 +85,46 @@ export const filterOrders = (orders, searchTerm, filterStatus) => {
 };
 
 // Função para filtrar produtos
+/**
+ * Filtra produtos baseado no termo de busca
+ * Busca por nome, categoria ou descrição do produto
+ * 
+ * @param {Array} products - Array de produtos
+ * @param {string} searchTerm - Termo de busca
+ * @returns {Array} - Produtos filtrados
+ */
 export const filterProducts = (products, searchTerm) => {
-  return products.filter(product =>
-    product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    product.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    product.category.toLowerCase().includes(searchTerm.toLowerCase())
+  if (!searchTerm) return products;
+  
+  const normalizedTerm = searchTerm.toLowerCase();
+  
+  return products.filter(product => 
+    product.name.toLowerCase().includes(normalizedTerm) ||
+    product.category.toLowerCase().includes(normalizedTerm) ||
+    (product.description && product.description.toLowerCase().includes(normalizedTerm))
+  );
+};
+
+/**
+ * Filtra clientes baseado no termo de busca
+ * Busca por nome, whatsapp, telefone, endereço, bairro ou cidade
+ * 
+ * @param {Array} clients - Array de clientes
+ * @param {string} searchTerm - Termo de busca
+ * @returns {Array} - Clientes filtrados
+ */
+export const filterClients = (clients, searchTerm) => {
+  if (!searchTerm) return clients;
+  
+  const normalizedTerm = searchTerm.toLowerCase();
+  
+  return clients.filter(client => 
+    client.name.toLowerCase().includes(normalizedTerm) ||
+    (client.whatsapp && client.whatsapp.toLowerCase().includes(normalizedTerm)) ||
+    (client.phone && client.phone.toLowerCase().includes(normalizedTerm)) ||
+    (client.street && client.street.toLowerCase().includes(normalizedTerm)) ||
+    (client.neighborhood && client.neighborhood.toLowerCase().includes(normalizedTerm)) ||
+    (client.address && client.address.toLowerCase().includes(normalizedTerm)) ||
+    (client.city && client.city.toLowerCase().includes(normalizedTerm))
   );
 };
