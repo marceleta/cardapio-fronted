@@ -370,7 +370,11 @@ const ProductsSection = ({
                 </InputAdornment>
               ),
             }}
-            sx={{ minWidth: 200 }}
+            sx={{ 
+              minWidth: 200,
+              '& .MuiInputBase-input': { fontSize: '1.4rem' },
+              '& .MuiInputLabel-root': { fontSize: '1.4rem' }
+            }}
           />
           <Button
             variant="contained"

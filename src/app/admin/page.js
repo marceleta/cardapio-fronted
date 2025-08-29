@@ -11,8 +11,10 @@ import {
   OrdersSection, 
   ProductsSection, 
   CategoriesSection,
+  CouponsSection,
   BannerManager,
-  SettingsSection 
+  SettingsSection,
+  CashierSection
 } from '../../components/admin/sections';
 import ClientsSection from '../../components/admin/sections/ClientsSection';
 import HighlightsManager from '../../components/admin/sections/HighlightsManager';
@@ -157,11 +159,17 @@ export default function AdminPage() {
           />
         );
       
+      case 'coupons':
+        return <CouponsSection />;
+      
       case 'banners':
         return <BannerManager />;
       
       case 'highlights':
         return <HighlightsManager />;
+      
+      case 'cashier':
+        return <CashierSection />;
       
       case 'settings':
         return <SettingsSection />;

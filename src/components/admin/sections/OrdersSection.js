@@ -83,7 +83,11 @@ const OrdersSection = ({
                 </InputAdornment>
               ),
             }}
-            sx={{ minWidth: 200 }}
+            sx={{ 
+              minWidth: 200,
+              '& .MuiInputBase-input': { fontSize: '1.4rem' },
+              '& .MuiInputLabel-root': { fontSize: '1.4rem' }
+            }}
           />
           <FormControl size="small" sx={{ minWidth: 150 }}>
             <InputLabel>Status</InputLabel>

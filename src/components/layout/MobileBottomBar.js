@@ -1,23 +1,73 @@
+/**
+ * BARRA DE NAVEGAÇÃO INFERIOR - MOBILE
+ * 
+ * Componente de navegação fixa na parte inferior da tela, otimizado para
+ * dispositivos móveis. Fornece acesso rápido às principais funcionalidades
+ * da aplicação com design touch-friendly.
+ * 
+ * Funcionalidades:
+ * - Navegação principal para dispositivos móveis
+ * - Indicador visual do carrinho com badge de quantidade
+ * - Acesso rápido a conta do usuário e pedidos
+ * - Exibição condicional apenas em breakpoints móveis
+ * - Integração com contexto do carrinho para atualizações em tempo real
+ */
+
 'use client';
 
-import { AppBar, Toolbar, Button, Box, Typography, Badge } from '@mui/material'; // Added Badge
-import { Home, ShoppingCart, Person } from '@mui/icons-material';
+// Importações do React
+import { useState } from 'react';
+
+// Importações do Material-UI
+import { 
+  AppBar, 
+  Toolbar, 
+  Button, 
+  Box, 
+  Typography, 
+  Badge 
+} from '@mui/material';
+import { 
+  Home, 
+  ShoppingCart, 
+  Person,
+  LocalOffer 
+} from '@mui/icons-material';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
-import { useCart } from '../../context/CartContext'; // Added useCart
-import { useState } from 'react'; // Import useState
-import AccountDialog from '../account/AccountDialog'; // Import AccountDialog
-import OrdersDialog from '../account/OrdersDialog'; // Import OrdersDialog
 
-export default function MobileBottomBar({ setCartOpen }) { // Added setCartOpen prop
+// Importações de contextos
+import { useCart } from '../../context/CartContext';
+
+// Importações de componentes locais
+import AccountDialog from '../account/AccountDialog';
+import OrdersDialog from '../account/OrdersDialog';
+import CouponsDialog from '../account/CouponsDialog';
+
+/**
+ * COMPONENTE PRINCIPAL DA BARRA DE NAVEGAÇÃO MÓVEL
+ * 
+ * @param {Object} props - Propriedades do componente
+ * @param {Function} props.setCartOpen - Função para abrir o drawer do carrinho
+ * @returns {JSX.Element|null} Elemento AppBar ou null se não for mobile
+ */
+export default function MobileBottomBar({ setCartOpen }) {
+  // Hooks do Material-UI para responsividade
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const { getTotalItems } = useCart(); // Get getTotalItems from useCart
-  const totalItems = getTotalItems(); // Get total items
+  
+  // Hook do contexto do carrinho
+  const { getTotalItems } = useCart();
+  const totalItems = getTotalItems();
 
-  const [isAccountDialogOpen, setIsAccountDialogOpen] = useState(false); // State for AccountDialog
-  const [isOrdersDialogOpen, setIsOrdersDialogOpen] = useState(false); // State for OrdersDialog
+  // Estados locais para controle dos diálogos
+  const [isAccountDialogOpen, setIsAccountDialogOpen] = useState(false);
+  const [isOrdersDialogOpen, setIsOrdersDialogOpen] = useState(false);
+  const [isCouponsDialogOpen, setIsCouponsDialogOpen] = useState(false);
 
+  /**
+   * MANIPULADORES DE DIÁLOGO DE CONTA
+   */
   const handleOpenAccountDialog = () => {
     setIsAccountDialogOpen(true);
   };
@@ -26,6 +76,9 @@ export default function MobileBottomBar({ setCartOpen }) { // Added setCartOpen 
     setIsAccountDialogOpen(false);
   };
 
+  /**
+   * MANIPULADORES DE DIÁLOGO DE PEDIDOS
+   */
   const handleOpenOrdersDialog = () => {
     setIsOrdersDialogOpen(true);
   };
@@ -34,39 +87,158 @@ export default function MobileBottomBar({ setCartOpen }) { // Added setCartOpen 
     setIsOrdersDialogOpen(false);
   };
 
+  /**
+   * MANIPULADORES DE DIÁLOGO DE CUPONS
+   */
+  const handleOpenCouponsDialog = () => {
+    setIsCouponsDialogOpen(true);
+  };
+
+  const handleCloseCouponsDialog = () => {
+    setIsCouponsDialogOpen(false);
+  };
+
+  /**
+   * NAVEGAÇÃO PARA O TOPO DA PÁGINA
+   * Implementa scroll suave para o início da página
+   */
   const handleScrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  // Renderização condicional - apenas em dispositivos móveis
   if (!isMobile) {
-    return null; // Hide on larger screens
+    return null;
   }
 
   return (
-    <AppBar position="fixed" color="primary" sx={{ top: 'auto', bottom: 0, display: { xs: 'block', sm: 'none' } }}>
-      <Toolbar sx={{ justifyContent: 'space-around' }}>
-        <Button color="inherit" sx={{ flexDirection: 'column', minWidth: 'auto' }} onClick={handleScrollToTop}>
-          <Home sx={{ fontSize: '1.5rem' }} />
-          <Typography variant="caption">Início</Typography>
+    <AppBar 
+      position="fixed" 
+      color="primary" 
+      sx={{ 
+        top: 'auto', 
+        bottom: 0, 
+        display: { xs: 'block', sm: 'none' },
+        zIndex: 1200 // Evitar sobreposição com outros elementos
+      }}
+    >
+      <Toolbar sx={{ justifyContent: 'space-around', px: 1 }}>
+        {/* BOTÃO INÍCIO - Volta ao topo da página */}
+        <Button 
+          color="inherit" 
+          sx={{ 
+            flexDirection: 'column', 
+            minWidth: 'auto',
+            flex: 1,
+            py: 1
+          }} 
+          onClick={handleScrollToTop}
+        >
+          <Home sx={{ fontSize: '1.2rem' }} />
+          <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>
+            Início
+          </Typography>
         </Button>
-        <Button color="inherit" sx={{ flexDirection: 'column', minWidth: 'auto' }} onClick={handleOpenOrdersDialog}> {/* Attach onClick handler */}
-          <ShoppingCart sx={{ fontSize: '1.5rem' }} />
-          <Typography variant="caption">Pedidos</Typography>
+        
+        {/* BOTÃO PEDIDOS - Abre lista de pedidos do usuário */}
+        <Button 
+          color="inherit" 
+          sx={{ 
+            flexDirection: 'column', 
+            minWidth: 'auto',
+            flex: 1,
+            py: 1
+          }} 
+          onClick={handleOpenOrdersDialog}
+        >
+          <ShoppingCart sx={{ fontSize: '1.2rem' }} />
+          <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>
+            Pedidos
+          </Typography>
         </Button>
-        {/* Cart Button */}
-        <Button color="inherit" sx={{ flexDirection: 'column', minWidth: 'auto' }} onClick={() => setCartOpen(true)}>
-          <Badge badgeContent={totalItems} color="secondary" sx={{ '& .MuiBadge-badge': { fontSize: '0.7rem', height: 16, minWidth: 16 } }}>
-            <ShoppingCart sx={{ fontSize: '1.5rem' }} />
+        
+        {/* BOTÃO CUPONS - Abre diálogo de cupons de desconto */}
+        <Button 
+          color="inherit" 
+          sx={{ 
+            flexDirection: 'column', 
+            minWidth: 'auto',
+            flex: 1,
+            py: 1
+          }} 
+          onClick={handleOpenCouponsDialog}
+        >
+          <LocalOffer sx={{ fontSize: '1.2rem' }} />
+          <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>
+            Cupons
+          </Typography>
+        </Button>
+        
+        {/* BOTÃO CARRINHO - Abre drawer do carrinho com badge de quantidade */}
+        <Button 
+          color="inherit" 
+          sx={{ 
+            flexDirection: 'column', 
+            minWidth: 'auto',
+            flex: 1,
+            py: 1
+          }} 
+          onClick={() => setCartOpen(true)}
+        >
+          <Badge 
+            badgeContent={totalItems} 
+            color="secondary" 
+            sx={{ 
+              '& .MuiBadge-badge': { 
+                fontSize: '0.6rem', 
+                height: 14, 
+                minWidth: 14 
+              } 
+            }}
+          >
+            <ShoppingCart sx={{ fontSize: '1.2rem' }} />
           </Badge>
-          <Typography variant="caption">Carrinho</Typography>
+          <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>
+            Carrinho
+          </Typography>
         </Button>
-        <Button color="inherit" sx={{ flexDirection: 'column', minWidth: 'auto' }} onClick={handleOpenAccountDialog}> {/* Attach onClick handler */}
-          <Person sx={{ fontSize: '1.5rem' }} />
-          <Typography variant="caption">Minha conta</Typography>
+        
+        {/* BOTÃO MINHA CONTA - Abre diálogo de gerenciamento da conta */}
+        <Button 
+          color="inherit" 
+          sx={{ 
+            flexDirection: 'column', 
+            minWidth: 'auto',
+            flex: 1,
+            py: 1
+          }} 
+          onClick={handleOpenAccountDialog}
+        >
+          <Person sx={{ fontSize: '1.2rem' }} />
+          <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>
+            Conta
+          </Typography>
         </Button>
       </Toolbar>
-      <AccountDialog open={isAccountDialogOpen} onClose={handleCloseAccountDialog} /> {/* Render AccountDialog */}
-      <OrdersDialog open={isOrdersDialogOpen} onClose={handleCloseOrdersDialog} /> {/* Render OrdersDialog */}
+      
+      {/* DIÁLOGOS MODAIS */}
+      {/* Diálogo de gerenciamento da conta do usuário */}
+      <AccountDialog 
+        open={isAccountDialogOpen} 
+        onClose={handleCloseAccountDialog} 
+      />
+      
+      {/* Diálogo de visualização de pedidos */}
+      <OrdersDialog 
+        open={isOrdersDialogOpen} 
+        onClose={handleCloseOrdersDialog} 
+      />
+      
+      {/* Diálogo de cupons de desconto */}
+      <CouponsDialog 
+        open={isCouponsDialogOpen} 
+        onClose={handleCloseCouponsDialog} 
+      />
     </AppBar>
   );
 }

@@ -114,6 +114,10 @@ const CompanyContact = ({ companyData, updateField }) => {
               onChange={(e) => handlePhoneChange('phone', e.target.value)}
               variant="outlined"
               placeholder="(11) 12345-6789"
+              sx={{
+                '& .MuiInputBase-input': { fontSize: '1.4rem' },
+                '& .MuiInputLabel-root': { fontSize: '1.4rem' }
+              }}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -132,6 +136,10 @@ const CompanyContact = ({ companyData, updateField }) => {
               onChange={(e) => handlePhoneChange('whatsapp', e.target.value)}
               variant="outlined"
               placeholder="(11) 98765-4321"
+              sx={{
+                '& .MuiInputBase-input': { fontSize: '1.4rem' },
+                '& .MuiInputLabel-root': { fontSize: '1.4rem' }
+              }}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -165,6 +173,10 @@ const CompanyContact = ({ companyData, updateField }) => {
               onChange={(e) => updateField('email', e.target.value)}
               variant="outlined"
               placeholder="contato@empresa.com"
+              sx={{
+                '& .MuiInputBase-input': { fontSize: '1.4rem' },
+                '& .MuiInputLabel-root': { fontSize: '1.4rem' }
+              }}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -194,6 +206,10 @@ const CompanyContact = ({ companyData, updateField }) => {
               onChange={(e) => updateField('website', e.target.value)}
               variant="outlined"
               placeholder="www.empresa.com"
+              sx={{
+                '& .MuiInputBase-input': { fontSize: '1.4rem' },
+                '& .MuiInputLabel-root': { fontSize: '1.4rem' }
+              }}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">

@@ -202,6 +202,29 @@ export const createMockOrder = (overrides = {}) => ({
 });
 
 /**
+ * Cria cupom mock com dados realistas
+ */
+export const createMockCoupon = (overrides = {}) => ({
+  id: Math.floor(Math.random() * 1000) + 1,
+  code: 'TESTE10',
+  description: 'Cupom de teste para testes automatizados',
+  type: 'percentage',
+  value: 10,
+  minOrderValue: 30.00,
+  maxDiscount: 15.00,
+  startDate: '2024-01-01',
+  endDate: '2024-12-31',
+  isActive: true,
+  firstPurchaseOnly: false,
+  activeDays: [1, 2, 3, 4, 5, 6, 0],
+  usageLimit: 100,
+  currentUsage: 25,
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString(),
+  ...overrides
+});
+
+/**
  * HELPERS DE INTERAÇÃO
  * 
  * Funções para facilitar interações comuns em testes.
@@ -287,6 +310,16 @@ export const mockAPI = {
     getById: jest.fn((id) => Promise.resolve(createMockOrder({ id }))),
     create: jest.fn((data) => Promise.resolve(createMockOrder(data))),
     updateStatus: jest.fn((id, status) => Promise.resolve(createMockOrder({ id, status })))
+  },
+  
+  // Mock para cupons
+  coupons: {
+    getAll: jest.fn(() => Promise.resolve([createMockCoupon()])),
+    getById: jest.fn((id) => Promise.resolve(createMockCoupon({ id }))),
+    create: jest.fn((data) => Promise.resolve(createMockCoupon(data))),
+    update: jest.fn((id, data) => Promise.resolve(createMockCoupon({ id, ...data }))),
+    delete: jest.fn(() => Promise.resolve({ success: true })),
+    validate: jest.fn((code) => Promise.resolve({ valid: true, coupon: createMockCoupon({ code }) }))
   }
 };
 

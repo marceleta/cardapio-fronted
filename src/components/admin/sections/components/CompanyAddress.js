@@ -85,7 +85,7 @@ const CompanyAddress = ({ companyData, updateField }) => {
         
         {/* 3. CEP - Otimizado para Full HD (1920px) */}
         <Grid container spacing={2} sx={{ mt: 2 }}>
-          <Grid item size={2}>
+          <Grid size={2}>
             <TextField
               fullWidth
               label="CEP"
@@ -99,7 +99,7 @@ const CompanyAddress = ({ companyData, updateField }) => {
 
         {/* 4. Endereço + Número - Layout 67% / 33% */}
         <Grid container spacing={2} sx={{ mt: 1 }}>
-          <Grid item size={9}>
+          <Grid size={10}>
             <TextField
               fullWidth
               label="Endereço *"
@@ -107,6 +107,10 @@ const CompanyAddress = ({ companyData, updateField }) => {
               onChange={(e) => updateField('address', e.target.value)}
               variant="outlined"
               required
+              sx={{
+                '& .MuiInputBase-input': { fontSize: '1.4rem' },
+                '& .MuiInputLabel-root': { fontSize: '1.4rem' }
+              }}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -116,7 +120,7 @@ const CompanyAddress = ({ companyData, updateField }) => {
               }}
             />
           </Grid>
-          <Grid item size={3}>
+          <Grid size={2}>
             <TextField
               fullWidth
               label="Número"
@@ -124,6 +128,10 @@ const CompanyAddress = ({ companyData, updateField }) => {
               onChange={(e) => updateField('number', e.target.value)}
               variant="outlined"
               placeholder="123"
+              sx={{
+                '& .MuiInputBase-input': { fontSize: '1.4rem' },
+                '& .MuiInputLabel-root': { fontSize: '1.4rem' }
+              }}
             />
           </Grid>
 
@@ -131,7 +139,7 @@ const CompanyAddress = ({ companyData, updateField }) => {
 
         {/* 4.1. Bairro - Otimizado para Full HD */}
         <Grid container spacing={2} sx={{ mt: 1 }}>
-          <Grid item size={8}>
+          <Grid size={4}>
             <TextField
               fullWidth
               label="Bairro *"
@@ -145,7 +153,7 @@ const CompanyAddress = ({ companyData, updateField }) => {
 
         {/* 5. Cidade + Estado - Otimizado para Full HD */}
         <Grid container spacing={2} sx={{ mt: 1 }}>
-          <Grid item size={4} >
+          <Grid size={4}>
             <TextField
               fullWidth
               label="Cidade *"
@@ -156,7 +164,7 @@ const CompanyAddress = ({ companyData, updateField }) => {
             />
           </Grid>
 
-          <Grid item size={2} >
+          <Grid size={4}>
             <FormControl fullWidth variant="outlined" required>
               <InputLabel>Estado *</InputLabel>
               <Select

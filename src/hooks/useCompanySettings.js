@@ -23,6 +23,7 @@ const DEFAULT_COMPANY_DATA = {
   name: '',
   description: '',
   logo: '',
+  banner: '',
   address: '',
   number: '',
   city: '',
@@ -34,6 +35,11 @@ const DEFAULT_COMPANY_DATA = {
   website: '',
   facebook: '',
   instagram: '',
+  // Redes sociais organizadas
+  socialMedia: {
+    facebook: '',
+    instagram: ''
+  },
   // Horários de funcionamento
   schedule: {
     monday: { open: '18:00', close: '23:00', closed: false },
@@ -43,7 +49,38 @@ const DEFAULT_COMPANY_DATA = {
     friday: { open: '18:00', close: '23:00', closed: false },
     saturday: { open: '12:00', close: '23:00', closed: false },
     sunday: { open: '12:00', close: '22:00', closed: false }
-  }
+  },
+  // Formas de pagamento
+  paymentMethods: [
+    {
+      id: 'cash',
+      name: 'Dinheiro',
+      enabled: true,
+      requiresChange: true,
+      color: '#4caf50'
+    },
+    {
+      id: 'credit_card',
+      name: 'Cartão de Crédito',
+      enabled: true,
+      requiresChange: false,
+      color: '#2196f3'
+    },
+    {
+      id: 'debit_card',
+      name: 'Cartão de Débito',
+      enabled: true,
+      requiresChange: false,
+      color: '#ff9800'
+    },
+    {
+      id: 'pix',
+      name: 'PIX',
+      enabled: true,
+      requiresChange: false,
+      color: '#9c27b0'
+    }
+  ]
 };
 
 /**
@@ -127,10 +164,22 @@ export const useCompanySettings = (options = {}) => {
    * Atualiza um campo específico dos dados da empresa
    */
   const updateField = useCallback((field, value) => {
-    setCompanyData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+    // Suporte para campos aninhados usando notação de ponto (ex: socialMedia.facebook)
+    if (field.includes('.')) {
+      const [parentKey, childKey] = field.split('.');
+      setCompanyData(prev => ({
+        ...prev,
+        [parentKey]: {
+          ...prev[parentKey],
+          [childKey]: value
+        }
+      }));
+    } else {
+      setCompanyData(prev => ({
+        ...prev,
+        [field]: value
+      }));
+    }
     setError(null);
   }, []);
 
