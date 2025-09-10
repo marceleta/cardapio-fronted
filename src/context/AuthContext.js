@@ -1,67 +1,48 @@
+/**
+ * CONTEXTO DE AUTENTICAÇÃO - GERENCIAMENTO GLOBAL
+ * 
+ * Context API para gerenciar estado de autenticação globalmente
+ * na aplicação. Suporta tanto clientes quanto administradores.
+ * 
+ * Funcionalidades:
+ * - Estado global de autenticação do usuário
+ * - Persistência de token no localStorage
+ * - Login para clientes e administradores
+ * - Funções de login e logout centralizadas
+ * - Hook customizado para facilitar uso
+ */
+
 'use client';
 
-import React, { createContext, useState, useContext } from 'react';
+import React, { createContext, useState, useContext, useCallback, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import apiClient, { getErrorMessage } from '../lib/apiClient';
+import { resolve } from 'styled-jsx/css';
+import { data } from 'react-router-dom';
 
+/**
+ * CONTEXTO DE AUTENTICAÇÃO
+ */
 const AuthContext = createContext(null);
 
-// Mock user database - in a real app, this would be handled by a backend API
-const MOCK_USERS = {
-  '11999998888': {
-    id: 1,
-    name: 'Marcelo Silva',
-    whatsapp: '11999998888',
-    email: 'marcelo@email.com',
-    password: '1234',
-    addresses: [
-      {
-        id: 1,
-        cep: '01234-567',
-        street: 'Rua das Flores',
-        number: '123',
-        complement: 'Apto 45',
-        neighborhood: 'Centro',
-        city: 'São Paulo',
-        state: 'SP',
-        reference: 'Próximo à praça'
-      }
-    ],
-    orders: [
-      {
-        id: 'ORD001',
-        date: new Date('2025-08-12T10:00:00Z'),
-        status: 'entregue',
-        items: [{ name: 'Classic Burger', quantity: 1, price: '25,00' }],
-        totalPrice: 25.00,
-      },
-      {
-        id: 'ORD002',
-        date: new Date('2025-08-13T14:30:00Z'),
-        status: 'em produção',
-        items: [{ name: 'Bacon Burger', quantity: 1, price: '28,00' }, { name: 'Coca-Cola', quantity: 1, price: '5,00' }],
-        totalPrice: 33.00,
-      },
-    ],
-  },
-  '11888887777': {
-    id: 2,
-    name: 'Ana Costa',
-    whatsapp: '11888887777',
-    email: 'ana@email.com',
-    password: 'senha123',
-    addresses: [],
-    orders: []
-  }
-};
-
+/**
+ * PROVEDOR DE AUTENTICAÇÃO
+ */
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  // Estados locais do contexto
+  const [user, setUser] = useState({isAuthenticated: false});
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const router = useRouter();
 
   /**
-   * REALIZA LOGIN DO USUÁRIO
+   * LOGIN DE CLIENTE (WhatsApp + Senha)
    */
-  const login = async ({ whatsapp, password }) => {
+  const loginClient = async ({ whatsapp, password }) => {
     try {
+      setLoading(true);
+      setError(null);
+      
       // Remove formatação do WhatsApp
       const cleanWhatsApp = whatsapp.replace(/\D/g, '');
       
@@ -70,42 +51,120 @@ export const AuthProvider = ({ children }) => {
       
       if (userData && userData.password === password) {
         setUser(userData);
-        setIsAuthenticated(true);
         
         // Simula salvamento no localStorage
         localStorage.setItem('user', JSON.stringify(userData));
+        localStorage.setItem('authToken', 'client-token-' + Date.now());
         localStorage.setItem('isAuthenticated', 'true');
         
         return { success: true, user: userData };
       } else {
-        return { 
-          success: false, 
-          message: 'WhatsApp ou senha incorretos' 
-        };
+        throw new Error('WhatsApp ou senha incorretos');
       }
-    } catch (error) {
-      console.error('Erro no login:', error);
-      return { 
-        success: false, 
-        message: 'Erro interno. Tente novamente.' 
-      };
+    } catch (err) {
+      const errorMessage = getErrorMessage(err);
+      setError(errorMessage);
+      return { success: false, error: errorMessage };
+    } finally {
+      setLoading(false);
     }
   };
 
   /**
-   * REALIZA CADASTRO DE NOVO USUÁRIO
+   * FUNÇÃO AUXILIAR PARA BUSCAR PERMISSÕES DO USUÁRIO
+   */
+  
+  const fetchUserPermissions = async () => {
+    try {
+      const response = await apiClient.get('/users/permissions/');
+      return response.data.permissions;
+    } catch (erro) {
+      console.error('Erro ao buscar permissões do usuário:', erro);
+      return [];
+    }
+  };
+
+
+  /**
+   * LOGIN DE ADMINISTRADOR (Email + Senha)
+   */
+
+  const loginAdmin = useCallback(async ({ username, password }) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Chama API de autenticação
+      const response = await apiClient.post('/auth/token/', { username, password });
+
+
+      // Verifica se a resposta contém dados do usuário
+      if (response && response.data) {
+
+        // token JWT
+        const token = response.data.access;
+        localStorage.setItem('authToken', token);
+
+        // Normaliza dados do usuário
+        const dataUser = dataUserNormalized(response);
+
+        // Atualiza estado
+        setUser(dataUser);
+
+
+        localStorage.setItem('user', JSON.stringify(dataUser));
+
+        return { success: true, user: dataUser };
+      }
+
+      return { success: false };
+
+    } catch (err) {
+      const errorMessage = 'Email ou senha incorretos';
+      setError(errorMessage);
+      console.error('Erro no login admin:', err);
+      return { success: false, error: errorMessage };
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+
+  const dataUserNormalized = (apiResponse) => {
+
+    if(apiResponse && apiResponse.data){
+
+      const { username, access, user_type } = apiResponse.data;
+      const isAdmin = (user_type === 'admin' || user_type === 'manager');
+      const isClient = (user_type === 'client');
+
+      return {
+        username: username,
+        isAuthenticated: true,
+        token: access,
+        user_type: user_type,
+        isAdmin: isAdmin,
+        isClient: isClient
+      }
+
+    }
+
+  }
+
+  /**
+   * CADASTRO DE CLIENTE
    */
   const register = async ({ name, whatsapp, email, password }) => {
     try {
+      setLoading(true);
+      setError(null);
+      
       // Remove formatação do WhatsApp
       const cleanWhatsApp = whatsapp.replace(/\D/g, '');
       
       // Verifica se usuário já existe
       if (MOCK_USERS[cleanWhatsApp]) {
-        return { 
-          success: false, 
-          message: 'Usuário já cadastrado com este WhatsApp' 
-        };
+        throw new Error('Usuário já cadastrado com este WhatsApp');
       }
       
       // Cria novo usuário
@@ -115,6 +174,7 @@ export const AuthProvider = ({ children }) => {
         whatsapp: cleanWhatsApp,
         email,
         password,
+        role: 'client',
         addresses: [],
         orders: []
       };
@@ -124,40 +184,88 @@ export const AuthProvider = ({ children }) => {
       
       // Faz login automático
       setUser(newUser);
-      setIsAuthenticated(true);
       
       // Simula salvamento no localStorage
       localStorage.setItem('user', JSON.stringify(newUser));
+      localStorage.setItem('authToken', 'client-token-' + Date.now());
       localStorage.setItem('isAuthenticated', 'true');
       
       return { success: true, user: newUser };
-    } catch (error) {
-      console.error('Erro no cadastro:', error);
-      return { 
-        success: false, 
-        message: 'Erro interno. Tente novamente.' 
-      };
+    } catch (err) {
+      const errorMessage = getErrorMessage(err);
+      setError(errorMessage);
+      return { success: false, error: errorMessage };
+    } finally {
+      setLoading(false);
     }
   };
 
   /**
-   * REALIZA LOGOUT DO USUÁRIO
+   * LOGOUT UNIVERSAL
    */
-  const logout = () => {
-    setUser(null);
-    setIsAuthenticated(false);
-    
-    // Remove dados do localStorage
-    localStorage.removeItem('user');
-    localStorage.removeItem('isAuthenticated');
-  };
+  const logout = useCallback(async () => {
+    try {
+      setLoading(true);
+      
+      
+      await apiClient.post('/auth/logout/');
+      
+      // Remove dados do localStorage
+      localStorage.removeItem('user');
+      localStorage.removeItem('authToken');
+      
+      
+      // Limpa estado
+      setUser({isAuthenticated: false});
+      setError(null);
+      
+      // Redireciona baseado no tipo de usuário atual
+      if (user.user_type === 'admin' || user.user_type === 'manager') {
+        router.push('/admin/login');
+      } else {
+        // Para clientes ou quando não há usuário definido
+        router.push('/');
+      }
+      
+    } catch (err) {
+      console.error('Erro no logout:', err);
+      // Mesmo com erro, limpa dados locais
+      localStorage.removeItem('user');
+      localStorage.removeItem('authToken');
+      setUser({isAuthenticated: false});
+
+    } finally {
+      setLoading(false);
+    }
+  }, [router, user]);
+
+  /**
+   * VERIFICAÇÃO DE AUTENTICAÇÃO
+   */
+  const checkAuthStatus = useCallback(async () => {
+    try {
+      
+      const user = localStorage.getItem('user');
+      const dataUser = JSON.parse(user);
+      setUser(dataUser);
+      
+
+    } catch (error) {
+      console.error('Erro ao restaurar sessão:', error);
+      // Remove dados corrompidos
+      localStorage.removeItem('user');
+      
+    }
+
+    return false;
+  }, []);
 
   /**
    * ADICIONA PEDIDO AO HISTÓRICO DO USUÁRIO
    */
   const addOrder = (newOrder) => {
     setUser((prevUser) => {
-      if (prevUser) {
+      if (prevUser && prevUser.role === 'client') {
         const updatedUser = {
           ...prevUser,
           orders: [newOrder, ...(prevUser.orders || [])]
@@ -180,7 +288,7 @@ export const AuthProvider = ({ children }) => {
    */
   const addAddress = (newAddress) => {
     setUser((prevUser) => {
-      if (prevUser) {
+      if (prevUser && prevUser.role === 'client') {
         const updatedUser = {
           ...prevUser,
           addresses: [...(prevUser.addresses || []), { ...newAddress, id: Date.now() }]
@@ -199,41 +307,48 @@ export const AuthProvider = ({ children }) => {
   };
 
   /**
-   * RESTAURA SESSÃO DO USUÁRIO
+   * LIMPAR ERRO
    */
-  const restoreSession = () => {
-    try {
-      const savedUser = localStorage.getItem('user');
-      const savedAuth = localStorage.getItem('isAuthenticated');
-      
-      if (savedUser && savedAuth === 'true') {
-        const userData = JSON.parse(savedUser);
-        setUser(userData);
-        setIsAuthenticated(true);
-        return true;
-      }
-    } catch (error) {
-      console.error('Erro ao restaurar sessão:', error);
-    }
-    return false;
-  };
+  const clearError = useCallback(() => {
+    setError(null);
+  }, []);
+
+  /**
+   * RESTAURA SESSÃO (Método legado para compatibilidade)
+   */
+  const restoreSession = checkAuthStatus;
 
   return (
     <AuthContext.Provider value={{ 
+      // Estados
       user, 
-      isAuthenticated,
-      login, 
+      loading,
+      error,
+      
+      // Métodos de autenticação
+      login: loginClient, // Mantém compatibilidade
+      loginClient,
+      loginAdmin,
       register,
       logout, 
+      
+      // Métodos de cliente
       addOrder,
       addAddress,
-      restoreSession
+      
+      // Utilitários
+      restoreSession,
+      checkAuthStatus,
+      clearError
     }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
+/**
+ * HOOK CUSTOMIZADO PARA AUTENTICAÇÃO
+ */
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {

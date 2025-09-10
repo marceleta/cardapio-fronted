@@ -21,6 +21,7 @@ const createJestConfig = nextJest({
  
 // Configuração personalizada para Jest
 const config = {
+
   // Provider de cobertura mais eficiente
   coverageProvider: 'v8',
   
@@ -28,7 +29,7 @@ const config = {
   testEnvironment: 'jsdom',
   
   // Arquivos de setup executados antes dos testes
-  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.js', 'jest-localstorage-mock'],
   
   // Padrões de arquivos de teste
   testMatch: [
@@ -37,7 +38,7 @@ const config = {
   ],
   
   // Configuração de cobertura de código
-  collectCoverage: true,
+  collectCoverage: false,
   collectCoverageFrom: [
     // Incluir todos arquivos React/JavaScript
     'src/**/*.{js,jsx,ts,tsx}',
@@ -120,6 +121,8 @@ const config = {
   // Limpeza automática de mocks
   clearMocks: true,
   restoreMocks: true
+
+  
 }
  
 // Exporta configuração integrada com Next.js

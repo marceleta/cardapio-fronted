@@ -1,8 +1,26 @@
+/**
+ * PÁGINA PRINCIPAL DO PAINEL ADMINISTRATIVO
+ * 
+ * Interface principal para gerenciamento do sistema de cardápio.
+ * Inclui proteção de rota para garantir acesso apenas a usuários
+ * autenticados com privilégios administrativos.
+ * 
+ * Funcionalidades:
+ * - Dashboard com estatísticas gerais
+ * - Gerenciamento de produtos e categorias
+ * - Controle de pedidos e clientes
+ * - Configurações do sistema
+ * - Proteção de acesso via autenticação
+ */
+
 'use client';
 
 import React from 'react';
 import { useState } from 'react';
 import { menuData, mockClients } from '../../lib/mockData';
+
+// Importar componentes de autenticação
+import { AdminRoute } from '../../components/auth/ProtectedRoute';
 
 // Importar componentes
 import AdminLayout from '../../components/admin/AdminLayout';
@@ -29,7 +47,10 @@ import { useCategoryHandlers } from '../../hooks/useCategoryHandlers';
 // Importar utilitários
 import { calculateDashboardStats } from '../../utils/adminHelpers';
 
-export default function AdminPage() {
+/**
+ * COMPONENTE PRINCIPAL DA ÁREA ADMINISTRATIVA
+ */
+function AdminPageContent() {
   // Estado principal usando hook personalizado
   const adminState = useAdminState();
   
@@ -98,7 +119,12 @@ export default function AdminPage() {
   // Calcular estatísticas do dashboard
   const { pendingOrders } = calculateDashboardStats(orders);
 
-  // Função para renderizar o conteúdo baseado na aba ativa
+  /**
+   * RENDERIZADOR DE CONTEÚDO BASEADO NA ABA ATIVA
+   * 
+   * Retorna o componente apropriado baseado na navegação
+   * selecionada pelo usuário.
+   */
   const renderContent = () => {
     switch (activeTab) {
       case 'dashboard':
@@ -190,9 +216,10 @@ export default function AdminPage() {
       setActiveTab={setActiveTab}
       pendingOrders={pendingOrders}
     >
+      {/* CONTEÚDO PRINCIPAL DA ÁREA ADMINISTRATIVA */}
       {renderContent()}
       
-      {/* Diálogos */}
+      {/* DIÁLOGOS E MODAIS */}
       <ProductDialog
         open={openProductDialog}
         onClose={() => setOpenProductDialog(false)}
@@ -203,5 +230,19 @@ export default function AdminPage() {
       
       {/* TODO: Implementar outros diálogos conforme necessário */}
     </AdminLayout>
+  );
+}
+
+/**
+ * COMPONENTE EXPORTADO COM PROTEÇÃO DE ROTA
+ * 
+ * Envolve o conteúdo administrativo com verificação de
+ * autenticação e privilégios necessários.
+ */
+export default function AdminPage() {
+  return (
+    <AdminRoute>
+      <AdminPageContent />
+    </AdminRoute>
   );
 }

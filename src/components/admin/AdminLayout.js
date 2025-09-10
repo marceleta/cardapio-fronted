@@ -34,6 +34,7 @@ import {
   LocalOffer
 } from '@mui/icons-material';
 import { drawerWidth } from '../../utils/adminHelpers';
+import { useAuth } from '../../context/AuthContext';
 
 const AdminLayout = ({ 
   activeTab, 
@@ -42,6 +43,7 @@ const AdminLayout = ({
   children 
 }) => {
   const [anchorEl, setAnchorEl] = React.useState(null);
+  const { logout } = useAuth();
 
   const menuItems = [
     { id: 'dashboard', label: 'Painel', icon: <Dashboard />, badge: null },
@@ -63,6 +65,11 @@ const AdminLayout = ({
   const handleMenuClose = () => {
     setAnchorEl(null);
   };
+
+  const handleLogout = async () =>{
+    handleMenuClose();
+    await logout();
+  }
 
   return (
     <Box sx={{ display: 'flex' }}>
@@ -103,7 +110,7 @@ const AdminLayout = ({
               <Person sx={{ mr: 1 }} />
               Perfil
             </MenuItem>
-            <MenuItem onClick={handleMenuClose}>
+            <MenuItem onClick={handleLogout}>
               <Logout sx={{ mr: 1 }} />
               Sair
             </MenuItem>
